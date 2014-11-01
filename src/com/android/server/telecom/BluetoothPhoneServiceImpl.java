@@ -335,12 +335,18 @@ public class BluetoothPhoneServiceImpl {
                         " update headset when onIsConferencedChanged is called later");
                 return;
             }
+            if (call.isExternalCall()) {
+                return;
+            }
             updateHeadsetWithCallState(false /* force */, call);
         }
 
         @Override
         public void onCallRemoved(Call call) {
             Log.d(TAG, "onCallRemoved");
+            if (call.isExternalCall()) {
+                return;
+            }
             mClccIndexMap.remove(call);
             updateHeadsetWithCallState(false /* force */, call);
         }
@@ -379,6 +385,9 @@ public class BluetoothPhoneServiceImpl {
                     return;
                 }
             }
+            if (call.isExternalCall()) {
+                return;
+            }
             // If a call is being put on hold because of a new connecting call, ignore the
             // CONNECTING since the BT state update needs to send out the numHeld = 1 + dialing
             // state atomically.
@@ -397,7 +406,7 @@ public class BluetoothPhoneServiceImpl {
             // which will send another update at which point we will be in the right state.
             Call anyActiveCall = mCallsManager.getActiveCall();
             if ((anyActiveCall != null) && oldState == CallState.CONNECTING &&
-                    newState == CallState.DIALING) {
+                    newState == CallState.DIALING || newState == CallState.PULLING) {
                 if (!isDsdaEnabled()) {
                     return;
                 } else if (isCallonActiveSub(anyActiveCall)) {
