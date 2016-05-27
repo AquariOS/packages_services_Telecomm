@@ -349,15 +349,7 @@ public class ConnectionServiceWrapper extends ServiceBinder {
                         Bundle extras = new Bundle();
                         extras.putBoolean("update", true);
                         call.putExtras(Call.SOURCE_CONNECTION_SERVICE, extras);
-                        // Just refresh the connection capabilities so that the UI
-                        // is forced to reenable the merge button as the capability
-                        // is still on the connection. Note when b/20530631 is fixed, we need
-                        // to revisit this fix to remove this hacky way of unhiding the merge
-                        // button (side effect of reprocessing the capabilities) and plumb
-                        // the failure event all the way to InCallUI instead of stopping
-                        // it here. That way we can also handle the UI of notifying that
-                        // the merged has failed.
-                        call.setConnectionCapabilities(call.getConnectionCapabilities(), true);
+                        call.onConnectionEvent(Connection.EVENT_CALL_MERGE_FAILED, null);
                     } else {
                         Log.w(this, "setConferenceMergeFailed, unknown call id: %s", callId);
                     }
