@@ -34,6 +34,7 @@ import android.os.RemoteException;
 import android.telecom.Connection;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
+import android.telecom.VideoProfile;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
@@ -118,7 +119,7 @@ public class BluetoothPhoneServiceImpl {
                     Log.i(TAG, "BT - answering call");
                     Call call = mCallsManager.getRingingCall();
                     if (call != null) {
-                        mCallsManager.answerCall(call, call.getVideoState());
+                        mCallsManager.answerCall(call, VideoProfile.STATE_AUDIO_ONLY);
                         return true;
                     }
                     return false;
@@ -419,6 +420,9 @@ public class BluetoothPhoneServiceImpl {
 
         @Override
         public void onIsConferencedChanged(Call call) {
+            if (call.isExternalCall()) {
+                return;
+            }
             /*
              * Filter certain onIsConferencedChanged callbacks. Unfortunately this needs to be done
              * because conference change events are not atomic and multiple callbacks get fired
@@ -636,7 +640,7 @@ public class BluetoothPhoneServiceImpl {
                 updateHeadsetWithCallState(true /* force */, activeCall);
                 return true;
             } else if (ringingCall != null) {
-                mCallsManager.answerCall(ringingCall, ringingCall.getVideoState());
+                mCallsManager.answerCall(ringingCall, VideoProfile.STATE_AUDIO_ONLY);
                 return true;
             } else if (heldCall != null) {
                 // CallsManager will hold any active calls when unhold() is called on a
@@ -1268,6 +1272,7 @@ public class BluetoothPhoneServiceImpl {
             case CallState.CONNECTING:
             case CallState.SELECT_PHONE_ACCOUNT:
             case CallState.DIALING:
+            case CallState.PULLING:
                 // Yes, this is correctly returning ALERTING.
                 // "Dialing" for BT means that we have sent information to the service provider
                 // to place the call but there is no confirmation that the call is going through.
