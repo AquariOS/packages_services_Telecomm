@@ -120,14 +120,7 @@ public class Ringer {
         boolean ringAllowed = shouldRingOrVibrate[0];
         boolean vibrationAllowed = shouldRingOrVibrate[1];
 
-        AudioManager audioManager =
-                (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-        if (ringAllowed && audioManager.getStreamVolume(AudioManager.STREAM_RING) > 0) {
-        if (!shouldRingForContact(foregroundCall.getContactUri())) {
-            return false;
-        }
-
-        if (isRingerAudible) {
+        if (ringAllowed && isRingerAudible) {
             mRingingCall = foregroundCall;
             Log.event(foregroundCall, Log.Events.START_RINGER);
             // Because we wait until a contact info query to complete before processing a
