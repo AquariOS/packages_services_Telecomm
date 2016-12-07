@@ -155,6 +155,7 @@ public class ParcelableCallUtils {
                 capabilities,
                 properties,
                 connectTimeMillis,
+                call.getCreationTimeMillis(),
                 handle,
                 call.getHandlePresentation(),
                 callerDisplayName,
@@ -317,7 +318,7 @@ public class ParcelableCallUtils {
         Connection.PROPERTY_GENERIC_CONFERENCE,
         android.telecom.Call.Details.PROPERTY_GENERIC_CONFERENCE,
 
-        Connection.PROPERTY_SHOW_CALLBACK_NUMBER,
+        Connection.PROPERTY_EMERGENCY_CALLBACK_MODE,
         android.telecom.Call.Details.PROPERTY_EMERGENCY_CALLBACK_MODE,
 
         Connection.PROPERTY_IS_EXTERNAL_CALL,
@@ -336,7 +337,10 @@ public class ParcelableCallUtils {
         android.telecom.Call.Details.PROPERTY_ADDITIONAL_CALL_FORWARDED,
 
         Connection.PROPERTY_REMOTE_INCOMING_CALLS_BARRED,
-        android.telecom.Call.Details.PROPERTY_REMOTE_INCOMING_CALLS_BARRED
+        android.telecom.Call.Details.PROPERTY_REMOTE_INCOMING_CALLS_BARRED,
+
+        Connection.PROPERTY_HAS_CDMA_VOICE_PRIVACY,
+        android.telecom.Call.Details.PROPERTY_HAS_CDMA_VOICE_PRIVACY
     };
 
     private static int convertConnectionToCallProperties(int connectionProperties) {
