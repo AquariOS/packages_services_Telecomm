@@ -31,6 +31,7 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemProperties;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.telecom.CallAudioState;
 import android.util.SparseArray;
 
@@ -1323,6 +1324,11 @@ public class CallAudioRouteStateMachine extends StateMachine {
      *                       it should be deactivated.
      */
     private void setNotificationsSuppressed(boolean on) {
+        final boolean dnd_when_call = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.DND_WHEN_CALL, 1,
+                UserHandle.USER_CURRENT) == 1;
+        if (!dnd_when_call) return;
+
         if (mInterruptionFilterProxy == null) {
             return;
         }
