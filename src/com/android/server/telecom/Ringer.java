@@ -18,13 +18,16 @@ package com.android.server.telecom;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.telecom.Log;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.os.Vibrator;
+import android.provider.Settings;
 
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -138,11 +141,24 @@ public class Ringer {
         if (isRingerAudible) {
             mRingingCall = foregroundCall;
             Log.addEvent(foregroundCall, LogUtils.Events.START_RINGER);
+
+            float startVolume = 0;
+            int rampUpTime = 0;
+
+            final ContentResolver cr = mContext.getContentResolver();
+            if (Settings.System.getInt(cr,
+                    Settings.System.INCREASING_RING, 0) != 0) {
+                startVolume = Settings.System.getFloat(cr,
+                        Settings.System.INCREASING_RING_START_VOLUME, 0.1f);
+                rampUpTime = Settings.System.getInt(cr,
+                        Settings.System.INCREASING_RING_RAMP_UP_TIME, 20);
+            }
+
             // Because we wait until a contact info query to complete before processing a
             // call (for the purposes of direct-to-voicemail), the information about custom
             // ringtones should be available by the time this code executes. We can safely
             // request the custom ringtone from the call and expect it to be current.
-            mRingtonePlayer.play(mRingtoneFactory, foregroundCall);
+            mRingtonePlayer.play(mRingtoneFactory, foregroundCall, startVolume, rampUpTime);
         } else {
             Log.i(this, "startRinging: skipping because ringer would not be audible. " +
                     "isVolumeOverZero=%s, shouldRingForContact=%s, isRingtonePresent=%s",
@@ -179,6 +195,11 @@ public class Ringer {
         Log.v(this, "Playing call-waiting tone.");
 
         stopRinging();
+
+        if (Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.VIBRATE_ON_CALLWAITING, 0, UserHandle.USER_CURRENT) == 1) {
+            vibrate(200, 300, 500);
+        }
 
         if (mCallWaitingPlayer == null) {
             Log.addEvent(call, LogUtils.Events.START_CALL_WAITING_TONE);
@@ -260,5 +281,12 @@ public class Ringer {
             return false;
         }
         return mSystemSettingsUtil.canVibrateWhenRinging(context);
+    }
+
+    public void vibrate(int v1, int p1, int v2) {
+        long[] pattern = new long[] {
+            0, v1, p1, v2
+        };
+        ((Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(pattern, -1);
     }
 }
